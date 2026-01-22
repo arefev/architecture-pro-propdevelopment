@@ -1,0 +1,201 @@
+# ============================================================
+# =============== 1. Cluster Roles ============================
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: security-privileged
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints", "configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: readonly-audit
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["list"]
+
+
+# ============================================================
+# =============== 2. Namespace Roles ==========================
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: product-namespace
+  name: namespace-admin
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: product-namespace
+  name: developer-edit
+rules:
+  - apiGroups: ["apps", ""]
+    resources: ["deployments", "services", "pods", "configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["create", "get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: product-namespace
+  name: developer-view
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: product-namespace
+  name: ci-cd-automation
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["create", "update"]
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["create", "update"]
+
+
+# ============================================================
+# =============== 3. Cluster Role Bindings ====================
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-binding
+subjects:
+  - kind: User
+    name: devops-admin
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: security-privileged-binding
+subjects:
+  - kind: User
+    name: security-officer
+roleRef:
+  kind: ClusterRole
+  name: security-privileged
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: readonly-audit-binding
+subjects:
+  - kind: User
+    name: audit-user
+roleRef:
+  kind: ClusterRole
+  name: readonly-audit
+  apiGroup: rbac.authorization.k8s.io
+
+
+# ============================================================
+# =============== 4. Role Bindings (per-namespace) ============
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: namespace-admin-binding
+  namespace: product-namespace
+subjects:
+  - kind: User
+    name: lead-developer
+roleRef:
+  kind: Role
+  name: namespace-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developer-edit-binding
+  namespace: product-namespace
+subjects:
+  - kind: User
+    name: developer1
+roleRef:
+  kind: Role
+  name: developer-edit
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developer-view-binding
+  namespace: product-namespace
+subjects:
+  - kind: User
+    name: qa-analyst
+roleRef:
+  kind: Role
+  name: developer-view
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ci-cd-automation-binding
+  namespace: product-namespace
+subjects:
+  - kind: User
+    name: gitlab-runner
+roleRef:
+  kind: Role
+  name: ci-cd-automation
+  apiGroup: rbac.authorization.k8s.io
