@@ -1,0 +1,135 @@
+# ============================================================
+# ========== ClusterRoleBinding: cluster-admin ================
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: bind-devops-admin-to-cluster-admin
+subjects:
+  - kind: User
+    name: devops-admin
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+
+# ============================================================
+# ======== ClusterRoleBinding: security-privileged ============
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: bind-security-officer-to-security-privileged
+subjects:
+  - kind: User
+    name: security-officer
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: security-privileged
+  apiGroup: rbac.authorization.k8s.io
+
+
+# ============================================================
+# ========= ClusterRoleBinding: readonly-audit =================
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: bind-audit-user-to-readonly-audit
+subjects:
+  - kind: User
+    name: audit-user
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: readonly-audit
+  apiGroup: rbac.authorization.k8s.io
+
+
+# ============================================================
+# ============= RoleBinding: namespace-admin ==================
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bind-lead-developer-to-namespace-admin
+  namespace: product-namespace
+subjects:
+  - kind: User
+    name: lead-developer
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: namespace-admin
+  apiGroup: rbac.authorization.k8s.io
+
+
+# ============================================================
+# ============= RoleBinding: developer-edit ===================
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bind-developer1-to-developer-edit
+  namespace: product-namespace
+subjects:
+  - kind: User
+    name: developer1
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: developer-edit
+  apiGroup: rbac.authorization.k8s.io
+
+
+# ============================================================
+# ============= RoleBinding: developer-view ===================
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bind-qa-analyst-to-developer-view
+  namespace: product-namespace
+subjects:
+  - kind: User
+    name: qa-analyst
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: developer-view
+  apiGroup: rbac.authorization.k8s.io
+
+
+# ============================================================
+# ============= RoleBinding: ci-cd-automation =================
+# ============================================================
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bind-gitlab-runner-to-ci-cd-automation
+  namespace: product-namespace
+subjects:
+  - kind: User
+    name: gitlab-runner
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: ci-cd-automation
+  apiGroup: rbac.authorization.k8s.io

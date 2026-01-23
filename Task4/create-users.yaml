@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ivanov
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: petrov
