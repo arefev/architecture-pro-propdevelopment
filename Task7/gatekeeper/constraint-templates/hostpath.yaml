@@ -1,0 +1,38 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8snohostpath
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sNoHostPath
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8snohostpath
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Pod"
+          containers := input.review.object.spec.containers
+          volume := input.review.object.spec.volumes[_]
+          volume.hostPath.path != ""  # hostPath присутствует
+
+          msg := sprintf("Использование hostPath запрещено: путь %v", [volume.hostPath.path])
+        }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sNoHostPath
+metadata:
+  name: deny-hostpath
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces:
+      - "*"

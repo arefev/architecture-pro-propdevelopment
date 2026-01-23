@@ -1,0 +1,48 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8srunasnonroot
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRunAsNonRoot
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties: {}
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srunasnonroot
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Pod"
+          container := input.review.object.spec.containers[_]
+
+          # Запуск от root: runAsUser == 0
+          container.securityContext.runAsUser == 0
+
+          msg := sprintf("Контейнер '%v' запускается от root (runAsUser=0), что запрещено.", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Pod"
+          container := input.review.object.spec.containers[_]
+
+          # runAsNonRoot отсутствует или false
+          not container.securityContext.runAsNonRoot
+          not (container.securityContext.runAsUser == 0)
+
+          msg := sprintf("Контейнер '%v' должен иметь runAsNonRoot=true.", [container.name])
+        }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRunAsNonRoot
+metadata:
+  name: require-runasnonroot
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
